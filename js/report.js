@@ -109,11 +109,16 @@ function renderTable(results) {
     if (results.length === 0) {
         document.getElementById("reportArea").innerHTML =
             "<p>لا توجد نتائج مطابقة للبحث</p>";
+        document.getElementById("printBtn").style.display = "none";
         return;
     }
 
+    // إظهار زر الطباعة
+    document.getElementById("printBtn").style.display = "block";
+
     let html = `
-    <table>
+    <div class="table-container">
+    <table class="report-table">
     <tr>
         <th>رقم الهوية</th>
         <th>الاسم</th>
@@ -150,10 +155,14 @@ function renderTable(results) {
         html += `</tr>`;
     });
 
-    html += `</table>`;
+    html += `
+    </table>
+    </div>
+    `;
 
     document.getElementById("reportArea").innerHTML = html;
 }
+
 
 
 // ===============================
