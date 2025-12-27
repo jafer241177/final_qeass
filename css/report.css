@@ -167,3 +167,77 @@ tr:nth-child(even) {
         font-size: 14px;
     }
 }
+/* زر الطباعة */
+#printBtn {
+    background: #28a745;
+    color: white;
+    padding: 12px 20px;
+    border: none;
+    border-radius: 6px;
+    font-size: 16px;
+    cursor: pointer;
+    width: 100%;
+}
+
+#printBtn:hover {
+    background: #1e7e34;
+}
+
+/* منع تمدد الجدول */
+.table-container {
+    width: 100%;
+    overflow-x: auto;
+    margin-top: 20px;
+}
+
+/* تنسيق الجدول */
+.report-table {
+    width: 100%;
+    border-collapse: collapse;
+    min-width: 800px;
+}
+
+.report-table th,
+.report-table td {
+    padding: 10px;
+    border: 1px solid #ddd;
+    text-align: center;
+    white-space: nowrap;
+}
+
+.report-table th {
+    background: #007bff;
+    color: white;
+}
+
+/* للجوال */
+@media (max-width: 600px) {
+    #printBtn {
+        font-size: 15px;
+        padding: 10px;
+    }
+
+    .report-table th,
+    .report-table td {
+        padding: 8px;
+        font-size: 14px;
+    }
+}
+
+/* عند الطباعة */
+@media print {
+    #printBtn,
+    .admin-menu,
+    .filters,
+    .logo-box {
+        display: none;
+    }
+
+    body {
+        background: white;
+    }
+
+    .container {
+        box-shadow: none;
+    }
+}
