@@ -197,4 +197,13 @@ select, input, button {
     color: #666;
     margin-top: 10px;
 }
+.school-name {
+    text-align: center;
+    font-size: 26px;
+    font-weight: bold;
+    margin-top: 15px;
+    margin-bottom: 20px;
+    color: #0056b3;
+}
+
 
