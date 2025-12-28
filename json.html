@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <title>تحويل Excel إلى JSON</title>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+
+    <style>
+        body {
+            font-family: "Tajawal", sans-serif;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .box {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            max-width: 500px;
+            margin: auto;
+            box-shadow: 0 0 10px #ccc;
+        }
+        input, button {
+            width: 100%;
+            padding: 12px;
+            margin-top: 10px;
+            border-radius: 6px;
+            border: 1px solid #ccc;
+        }
+        button {
+            background: #007bff;
+            color: white;
+            border: none;
+            cursor: pointer;
+        }
+        button:hover {
+            background: #0056b3;
+        }
+        pre {
+            background: #222;
+            color: #0f0;
+            padding: 15px;
+            border-radius: 6px;
+            margin-top: 20px;
+            white-space: pre-wrap;
+        }
+    </style>
+</head>
+
+<body>
+
+<div class="box">
+    <h2>تحويل Excel إلى JSON (صيغة GitHub)</h2>
+
+    <input type="file" id="excelFile" accept=".xlsx, .xls">
+
+    <button onclick="convertQuestions()">تحويل الأسئلة</button>
+
+    <pre id="output"></pre>
+</div>
+
+<script>
+
+function readExcel(callback) {
+    let file = document.getElementById("excelFile").files[0];
+    if (!file) {
+        alert("الرجاء اختيار ملف Excel");
+        return;
+    }
+
+    let reader = new FileReader();
+    reader.onload = function(e) {
+        let data = new Uint8Array(e.target.result);
+        let workbook = XLSX.read(data, { type: "array" });
+        let sheet = workbook.Sheets[workbook.SheetNames[0]];
+        let json = XLSX.utils.sheet_to_json(sheet);
+        callback(json);
+    };
+    reader.readAsArrayBuffer(file);
+}
+
+function convertQuestions() {
+    readExcel(function(rows) {
+
+        // تجميع الأسئلة حسب المادة
+        let grouped = {};
+
+        rows.forEach(r => {
+            let name = r.name;
+
+            if (!grouped[name]) {
+                grouped[name] = [];
+            }
+
+            grouped[name].push({
+                q: r.q,
+                a: r.a,
+                b: r.b,
+                c: r.c,
+                d: r.d,
+                correct: Number(r.correct),
+                skill: r.skill
+            });
+        });
+
+        // تحويلها إلى الشكل النهائي
+        let finalJson = Object.keys(grouped).map(name => ({
+            name: name,
+            questions: grouped[name]
+        }));
+
+        document.getElementById("output").textContent =
+            JSON.stringify(finalJson, null, 4);
+    });
+}
+
+</script>
+
+</body>
+</html>
