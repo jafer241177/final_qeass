@@ -1,0 +1,816 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<title>نظام إنشاء الأسئلة - Build Questions</title>
+
+<!-- Quill styles -->
+<link href="https://cdn.quilljs.com/1.3.6/quill.snow.css" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/xlsx/dist/xlsx.full.min.js"></script>
+
+<style>
+    body {
+        font-family: Tahoma, Arial, sans-serif;
+        margin: 20px;
+        background: #f4f4f4;
+        direction: rtl;
+        text-align: right;
+    }
+    h1, h2, h3 {
+        margin: 10px 0;
+    }
+    .card {
+        background: #ffffff;
+        border-radius: 8px;
+        padding: 15px;
+        margin-bottom: 15px;
+        box-shadow: 0 0 5px rgba(0,0,0,0.1);
+    }
+    label {
+        font-weight: bold;
+        display: block;
+        margin-top: 5px;
+    }
+    select, input[type="text"], input[type="password"] {
+        width: 100%;
+        padding: 6px;
+        margin: 5px 0 10px;
+        box-sizing: border-box;
+    }
+    .options-container {
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+    }
+    .option-card {
+        border: 1px solid #ddd;
+        border-radius: 8px;
+        padding: 10px;
+        background: #fafafa;
+    }
+    .option-title {
+        font-weight: bold;
+        margin-bottom: 5px;
+        color: #333;
+    }
+    #questionsTable {
+        width: 100%;
+        border-collapse: collapse;
+        margin-top: 15px;
+        background: #fff;
+    }
+    #questionsTable th, #questionsTable td {
+        border: 1px solid #ccc;
+        padding: 6px;
+        text-align: center;
+        font-size: 14px;
+    }
+    #questionsTable th {
+        background: #e9ecef;
+    }
+    button {
+        cursor: pointer;
+        padding: 6px 10px;
+        margin: 3px;
+        border-radius: 5px;
+        border: none;
+        font-size: 14px;
+    }
+    .btn-main {
+        background: #007bff;
+        color: white;
+    }
+    .btn-danger {
+        background: #dc3545;
+        color: white;
+    }
+    .btn-secondary {
+        background: #6c757d;
+        color: white;
+    }
+    .toolbar-wrapper {
+        margin-bottom: 5px;
+    }
+    #lockArea {
+        background: #fff3cd;
+        border: 1px solid #ffeeba;
+        border-radius: 8px;
+        padding: 10px;
+        margin-top: 20px;
+    }
+    #exportArea {
+        display: none;
+        margin-top: 15px;
+    }
+    #output {
+        width: 100%;
+        box-sizing: border-box;
+    }
+</style>
+</head>
+
+<body>
+
+<h1>📝 نظام إنشاء الأسئلة - Build Questions</h1>
+
+<div class="card">
+    <h2>بيانات السؤال</h2>
+
+    <label for="name">المادة</label>
+    <select id="name">
+        <option value="كمي">كمي</option>
+        <option value="لفظي">لفظي</option>
+        <option value="تحصيلي">تحصيلي</option>
+        <option value="STEP">STEP</option>
+    </select>
+
+    <label>السؤال</label>
+    <div class="toolbar-wrapper">
+        <div id="toolbar-question">
+            <span class="ql-formats">
+                <button class="ql-bold"></button>
+                <button class="ql-italic"></button>
+                <button class="ql-underline"></button>
+            </span>
+            <span class="ql-formats">
+                <select class="ql-color"></select>
+                <select class="ql-background"></select>
+            </span>
+            <span class="ql-formats">
+                <button class="ql-image"></button>
+            </span>
+            
+            <span class="ql-formats">
+                <select class="ql-align"></select>
+            </span>
+            <span class="ql-formats">
+                <select class="ql-size">
+                    <option value="small"></option>
+                    <option selected></option>
+                    <option value="large"></option>
+                    <option value="huge"></option>
+                </select>
+            </span>
+        </div>
+    </div>
+    <div id="editor-question" style="height: 150px; background:#fff;"></div>
+
+    <label>المهارة</label>
+    <input type="text" id="skill" placeholder="مثل: تناظر لفظي، استنتاج، مقارنة...">
+
+    <label>الإجابة الصحيحة</label>
+    <select id="correct">
+        <option value="0">A</option>
+        <option value="1">B</option>
+        <option value="2">C</option>
+        <option value="3">D</option>
+    </select>
+</div>
+
+<div class="card">
+    <h2>الخيارات</h2>
+    <div class="options-container">
+
+        <!-- خيار A -->
+        <div class="option-card">
+            <div class="option-title">الخيار A</div>
+            <div class="toolbar-wrapper">
+                <div id="toolbar-a">
+                    <span class="ql-formats">
+                        <button class="ql-bold"></button>
+                        <button class="ql-italic"></button>
+                        <button class="ql-underline"></button>
+                    </span>
+                    <span class="ql-formats">
+                        <select class="ql-color"></select>
+                        <select class="ql-background"></select>
+                    </span>
+                    <span class="ql-formats">
+                        <button class="ql-image"></button>
+                    </span>
+                  
+                    <span class="ql-formats">
+                        <select class="ql-align"></select>
+                    </span>
+                    <span class="ql-formats">
+                        <select class="ql-size">
+                            <option value="small"></option>
+                            <option selected></option>
+                            <option value="large"></option>
+                            <option value="huge"></option>
+                        </select>
+                    </span>
+                </div>
+            </div>
+            <div id="editor-a" style="height: 150px; background:#fff;"></div>
+        </div>
+
+        <!-- خيار B -->
+        <div class="option-card">
+            <div class="option-title">الخيار B</div>
+            <div class="toolbar-wrapper">
+                <div id="toolbar-b">
+                    <span class="ql-formats">
+                        <button class="ql-bold"></button>
+                        <button class="ql-italic"></button>
+                        <button class="ql-underline"></button>
+                    </span>
+                    <span class="ql-formats">
+                        <select class="ql-color"></select>
+                        <select class="ql-background"></select>
+                    </span>
+                    <span class="ql-formats">
+                        <button class="ql-image"></button>
+                    </span>
+                  
+                    <span class="ql-formats">
+                        <select class="ql-align"></select>
+                    </span>
+                    <span class="ql-formats">
+                        <select class="ql-size">
+                            <option value="small"></option>
+                            <option selected></option>
+                            <option value="large"></option>
+                            <option value="huge"></option>
+                        </select>
+                    </span>
+                </div>
+            </div>
+            <div id="editor-b" style="height: 150px; background:#fff;"></div>
+        </div>
+
+        <!-- خيار C -->
+        <div class="option-card">
+            <div class="option-title">الخيار C</div>
+            <div class="toolbar-wrapper">
+                <div id="toolbar-c">
+                    <span class="ql-formats">
+                        <button class="ql-bold"></button>
+                        <button class="ql-italic"></button>
+                        <button class="ql-underline"></button>
+                    </span>
+                    <span class="ql-formats">
+                        <select class="ql-color"></select>
+                        <select class="ql-background"></select>
+                    </span>
+                    <span class="ql-formats">
+                        <button class="ql-image"></button>
+                    </span>
+                 
+                    <span class="ql-formats">
+                        <select class="ql-align"></select>
+                    </span>
+                    <span class="ql-formats">
+                        <select class="ql-size">
+                            <option value="small"></option>
+                            <option selected></option>
+                            <option value="large"></option>
+                            <option value="huge"></option>
+                        </select>
+                    </span>
+                </div>
+            </div>
+            <div id="editor-c" style="height: 150px; background:#fff;"></div>
+        </div>
+
+        <!-- خيار D -->
+        <div class="option-card">
+            <div class="option-title">الخيار D</div>
+            <div class="toolbar-wrapper">
+                <div id="toolbar-d">
+                    <span class="ql-formats">
+                        <button class="ql-bold"></button>
+                        <button class="ql-italic"></button>
+                        <button class="ql-underline"></button>
+                    </span>
+                    <span class="ql-formats">
+                        <select class="ql-color"></select>
+                        <select class="ql-background"></select>
+                    </span>
+                    <span class="ql-formats">
+                        <button class="ql-image"></button>
+                    </span>
+                
+                    <span class="ql-formats">
+                        <select class="ql-align"></select>
+                    </span>
+                    <span class="ql-formats">
+                        <select class="ql-size">
+                            <option value="small"></option>
+                            <option selected></option>
+                            <option value="large"></option>
+                            <option value="huge"></option>
+                        </select>
+                    </span>
+                </div>
+            </div>
+            <div id="editor-d" style="height: 150px; background:#fff;"></div>
+        </div>
+
+    </div>
+
+    <button class="btn-main" onclick="addQuestion()">➕ إضافة سؤال جديد</button>
+    <button class="btn-secondary" onclick="uploadToFirebase()">☁ حفظ السؤال</button>
+</div>
+<!-- جدول عرض الأسئلة -->
+<div class="card">
+    <h2>📋 قائمة الأسئلة</h2>
+    <label>فلترة حسب القسم</label>
+<select id="filterSelect" onchange="renderQuestionsTable()">
+    <option value="all">عرض كل الأقسام</option>
+    <option value="كمي">كمي</option>
+    <option value="لفظي">لفظي</option>
+    <option value="تحصيلي">تحصيلي</option>
+    <option value="STEP">STEP</option>
+</select>
+
+    <table id="questionsTable">
+        <thead>
+            <tr>
+                <th>#</th>
+                <th>المادة</th>
+                <th>السؤال</th>
+                <th>الإجابة</th>
+                <th>تعديل</th>
+                <th>حذف</th>
+            </tr>
+        </thead>
+        <tbody id="questionsTableBody"></tbody>
+    </table>
+</div>
+
+<!-- Firebase + Quill + html2canvas -->
+<script src="https://cdn.quilljs.com/1.3.6/quill.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+
+<script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-storage.js"></script>
+
+<script>
+// إعداد Firebase — ضع بياناتك الحقيقية هنا
+var firebaseConfig = {
+  apiKey: "AIzaSyD-xxxxxxxxxxxxxxxxxxxx",
+  authDomain: "quiz-262a8.firebaseapp.com",
+  databaseURL: "https://quiz26-caf2f-default-rtdb.asia-southeast1.firebasedatabase.app",
+  projectId: "quiz-262a8",
+  storageBucket: "quiz-262a8.appspot.com",
+  messagingSenderId: "123456789",
+  appId: "1:123456789:web:xxxxxxxxxxxx"
+};
+firebase.initializeApp(firebaseConfig);
+const storage = firebase.storage();
+// رفع ملف إلى Firebase Storage وإرجاع الرابط
+function uploadImageToStorage(file) {
+    return new Promise((resolve, reject) => {
+        const fileName = "q_" + Date.now() + "_" + Math.floor(Math.random() * 99999) + ".png";
+        const storageRef = storage.ref("questions/" + fileName);
+
+        storageRef.put(file).then(snapshot => {
+            snapshot.ref.getDownloadURL().then(url => resolve(url));
+        }).catch(err => reject(err));
+    });
+}
+
+// تفعيل رفع الصور تلقائيًا داخل محرر Quill
+function enableImageAutoUpload(quill) {
+
+    // عند اللصق (نسخة محسّنة تدعم Snipping Tool و PrintScreen)
+    quill.root.addEventListener("paste", async function (e) {
+        const clipboard = e.clipboardData || window.clipboardData;
+        if (!clipboard) return;
+
+        // 1) دعم clipboard.items (الطريقة التقليدية)
+        if (clipboard.items) {
+            for (let item of clipboard.items) {
+                if (item.type.indexOf("image") !== -1) {
+                    e.preventDefault();
+                    const file = item.getAsFile();
+                    const url = await uploadImageToStorage(file);
+                    const range = quill.getSelection(true);
+                    quill.insertEmbed(range.index, "image", url);
+                    return;
+                }
+            }
+        }
+
+        // 2) دعم clipboard.files (مهم جدًا للقصّ)
+        const file = clipboard.files?.[0];
+        if (file && file.type.startsWith("image/")) {
+            e.preventDefault();
+            const url = await uploadImageToStorage(file);
+            const range = quill.getSelection(true);
+            quill.insertEmbed(range.index, "image", url);
+        }
+    });
+
+    // عند السحب والإفلات
+    quill.root.addEventListener("drop", async function (e) {
+        e.preventDefault();
+        const file = e.dataTransfer.files[0];
+        if (file && file.type.startsWith("image/")) {
+            const url = await uploadImageToStorage(file);
+            const range = quill.getSelection(true);
+            quill.insertEmbed(range.index, "image", url);
+        }
+    });
+}
+
+
+// مصفوفة الأسئلة من Firebase
+let firebaseQuestions = {};
+
+// تحميل الأسئلة من Firebase عند فتح الصفحة
+function loadQuestions() {
+    firebase.database().ref("build_questions").on("value", snapshot => {
+        firebaseQuestions = snapshot.val() || {};
+        renderQuestionsTable();
+    });
+}
+
+// عرض الأسئلة في الجدول
+function renderQuestionsTable() {
+    const tbody = document.getElementById("questionsTableBody");
+    tbody.innerHTML = "";
+
+    let index = 1;
+
+    const filter = document.getElementById("filterSelect").value;
+
+for (let key in firebaseQuestions) {
+    let q = firebaseQuestions[key];
+
+    // تطبيق الفلتر
+    if (filter !== "all" && q.name !== filter) continue;
+
+
+        // استخراج نص بسيط من السؤال
+        let tempDiv = document.createElement("div");
+        tempDiv.innerHTML = q.q;
+        let plainText = tempDiv.textContent || tempDiv.innerText || "";
+
+        let tr = document.createElement("tr");
+        tr.id = "row-" + key;
+
+        tr.innerHTML = `
+            <td>${index++}</td>
+            <td>${q.name}</td>
+            <td style="max-width:250px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${plainText}</td>
+            <td>${["A","B","C","D"][q.correct]}</td>
+            <td><button class="btn-secondary" onclick="editRow('${key}')">✏️ تعديل</button></td>
+            <td><button class="btn-danger" onclick="deleteRow('${key}')">🗑 حذف</button></td>
+        `;
+
+        tbody.appendChild(tr);
+    }
+}
+
+// حذف سؤال من Firebase
+function deleteRow(key) {
+    if (!confirm("هل تريد حذف هذا السؤال نهائيًا؟")) return;
+
+    firebase.database().ref("build_questions/" + key).remove()
+        .then(() => alert("تم الحذف بنجاح"))
+        .catch(err => alert("خطأ أثناء الحذف"));
+}
+
+// وضع التعديل داخل الصف
+function editRow(key) {
+    let q = firebaseQuestions[key];
+    let tr = document.getElementById("row-" + key);
+
+    tr.innerHTML = `
+        <td colspan="6">
+            <div class="card" style="background:#eef7ff;">
+                <h3>تعديل السؤال</h3>
+
+                <label>السؤال</label>
+                <div id="toolbar-edit-q-${key}"></div>
+                <div id="editor-edit-q-${key}" style="height:150px; background:#fff;"></div>
+
+                <label>الخيار A</label>
+                <div id="toolbar-edit-a-${key}"></div>
+                <div id="editor-edit-a-${key}" style="height:150px; background:#fff;"></div>
+
+                <label>الخيار B</label>
+                <div id="toolbar-edit-b-${key}"></div>
+                <div id="editor-edit-b-${key}" style="height:150px; background:#fff;"></div>
+
+                <label>الخيار C</label>
+                <div id="toolbar-edit-c-${key}"></div>
+                <div id="editor-edit-c-${key}" style="height:150px; background:#fff;"></div>
+
+                <label>الخيار D</label>
+                <div id="toolbar-edit-d-${key}"></div>
+                <div id="editor-edit-d-${key}" style="height:150px; background:#fff;"></div>
+
+                <label>المهارة</label>
+                <input type="text" id="edit-skill-${key}" value="${q.skill || ""}">
+
+                <label>الإجابة الصحيحة</label>
+                <select id="edit-correct-${key}">
+                    <option value="0" ${q.correct==0?"selected":""}>A</option>
+                    <option value="1" ${q.correct==1?"selected":""}>B</option>
+                    <option value="2" ${q.correct==2?"selected":""}>C</option>
+                    <option value="3" ${q.correct==3?"selected":""}>D</option>
+                </select>
+
+                <button class="btn-main" onclick="saveEdit('${key}')">💾 حفظ</button>
+                <button class="btn-secondary" onclick="cancelEdit()">إلغاء</button>
+            </div>
+        </td>
+    `;
+
+    // إنشاء محررات Quill للتعديل
+    createEditQuill(key, q);
+}
+
+// إنشاء محررات Quill داخل الصف
+function createEditQuill(key, q) {
+    window["quill_edit_q_" + key] = new Quill(`#editor-edit-q-${key}`, {
+        theme: 'snow',
+        modules: { toolbar: `#toolbar-edit-q-${key}` }
+    });
+    window["quill_edit_q_" + key].root.innerHTML = q.q;
+
+    window["quill_edit_a_" + key] = new Quill(`#editor-edit-a-${key}`, {
+        theme: 'snow',
+        modules: { toolbar: `#toolbar-edit-a-${key}` }
+    });
+    window["quill_edit_a_" + key].root.innerHTML = q.a;
+
+    window["quill_edit_b_" + key] = new Quill(`#editor-edit-b-${key}`, {
+        theme: 'snow',
+        modules: { toolbar: `#toolbar-edit-b-${key}` }
+    });
+    window["quill_edit_b_" + key].root.innerHTML = q.b;
+
+    window["quill_edit_c_" + key] = new Quill(`#editor-edit-c-${key}`, {
+        theme: 'snow',
+        modules: { toolbar: `#toolbar-edit-c-${key}` }
+    });
+    window["quill_edit_c_" + key].root.innerHTML = q.c;
+
+    window["quill_edit_d_" + key] = new Quill(`#editor-edit-d-${key}`, {
+        theme: 'snow',
+        modules: { toolbar: `#toolbar-edit-d-${key}` }
+    });
+    window["quill_edit_d_" + key].root.innerHTML = q.d;
+    enableImageAutoUpload(window["quill_edit_q_" + key]);
+enableImageAutoUpload(window["quill_edit_a_" + key]);
+enableImageAutoUpload(window["quill_edit_b_" + key]);
+enableImageAutoUpload(window["quill_edit_c_" + key]);
+enableImageAutoUpload(window["quill_edit_d_" + key]);
+}
+
+// إلغاء التعديل
+function cancelEdit() {
+    renderQuestionsTable();
+}
+
+// حفظ التعديلات
+function saveEdit(key) {
+    let updated = {
+        name: firebaseQuestions[key].name,
+        q: window["quill_edit_q_" + key].root.innerHTML,
+        a: window["quill_edit_a_" + key].root.innerHTML,
+        b: window["quill_edit_b_" + key].root.innerHTML,
+        c: window["quill_edit_c_" + key].root.innerHTML,
+        d: window["quill_edit_d_" + key].root.innerHTML,
+        skill: document.getElementById("edit-skill-" + key).value,
+        correct: Number(document.getElementById("edit-correct-" + key).value)
+    };
+
+    firebase.database().ref("build_questions/" + key).update(updated)
+        .then(() => {
+            alert("تم حفظ التعديلات بنجاح");
+            loadQuestions();
+        })
+        .catch(err => alert("خطأ أثناء الحفظ"));
+}
+
+// تحميل الأسئلة عند فتح الصفحة
+loadQuestions();
+</script>
+<!-- منطقة المعلم -->
+<div id="lockArea" class="card">
+    <h3>🔒 منطقة خاصة بالمعلم</h3>
+    <p>هذه المنطقة خاصة بالتصدير ورفع الأسئلة، محمية بكلمة مرور.</p>
+    <label>كلمة المرور</label>
+    <input type="password" id="passwordInput" placeholder="أدخل كلمة المرور">
+    <button class="btn-secondary" onclick="unlockJSON()">دخول</button>
+</div>
+
+<!-- منطقة التصدير -->
+<div id="exportArea" class="card">
+    <h3>📦 تصدير ورفع الأسئلة</h3>
+    <button class="btn-main" onclick="exportJSON()">📄 تصدير JSON (build_questions.json)</button>
+    
+    <h3>📥 استيراد أسئلة من Excel</h3>
+<input type="file" id="excelFile" accept=".xlsx, .xls">
+<button class="btn-main" onclick="importExcel()">📥 استيراد من Excel</button>
+<button class="btn-secondary" onclick="uploadImported()">☁ رفع الأسئلة المستوردة</button>
+
+<br><br>
+<div id="importStatus" style="color:green; font-weight:bold;"></div>
+
+    <br><br>
+    <label>محتوى JSON النهائي</label>
+    <textarea id="output" rows="12"></textarea>
+</div>
+
+<script>
+// محررات Quill الأساسية (إضافة سؤال جديد)
+var quillQuestion = new Quill('#editor-question', {
+  theme: 'snow',
+  modules: { toolbar: '#toolbar-question' }
+});
+var quillA = new Quill('#editor-a', {
+  theme: 'snow',
+  modules: { toolbar: '#toolbar-a' }
+});
+var quillB = new Quill('#editor-b', {
+  theme: 'snow',
+  modules: { toolbar: '#toolbar-b' }
+});
+var quillC = new Quill('#editor-c', {
+  theme: 'snow',
+  modules: { toolbar: '#toolbar-c' }
+});
+var quillD = new Quill('#editor-d', {
+  theme: 'snow',
+  modules: { toolbar: '#toolbar-d' }
+});
+enableImageAutoUpload(quillQuestion);
+enableImageAutoUpload(quillA);
+enableImageAutoUpload(quillB);
+enableImageAutoUpload(quillC);
+enableImageAutoUpload(quillD);
+
+// زر لقطة الشاشة
+
+
+// مصفوفة الأسئلة الجديدة (قبل الرفع)
+let newQuestions = [];
+
+// إضافة سؤال جديد
+function addQuestion() {
+    const name = document.getElementById("name").value;
+    const skill = document.getElementById("skill").value.trim();
+    const correct = Number(document.getElementById("correct").value);
+
+    const qHtml = quillQuestion.root.innerHTML.trim();
+    const aHtml = quillA.root.innerHTML.trim();
+    const bHtml = quillB.root.innerHTML.trim();
+    const cHtml = quillC.root.innerHTML.trim();
+    const dHtml = quillD.root.innerHTML.trim();
+
+    if (!qHtml || qHtml === "<p><br></p>") {
+        alert("رجاءً أدخل نص السؤال.");
+        return;
+    }
+
+    let newQ = {
+        name: name,
+        q: qHtml,
+        a: aHtml,
+        b: bHtml,
+        c: cHtml,
+        d: dHtml,
+        correct: correct,
+        skill: skill
+    };
+
+    newQuestions.push(newQ);
+    alert("تمت إضافة السؤال إلى قائمة الأسئلة الجديدة.");
+
+    quillQuestion.setContents([]);
+    quillA.setContents([]);
+    quillB.setContents([]);
+    quillC.setContents([]);
+    quillD.setContents([]);
+    document.getElementById("skill").value = "";
+    document.getElementById("correct").value = 0;
+}
+
+// فتح منطقة التصدير
+function unlockJSON() {
+    const pass = document.getElementById("passwordInput").value;
+    const correctPass = "teacher123"; // يمكنك تغييره
+
+    if (pass === correctPass) {
+        document.getElementById("exportArea").style.display = "block";
+        document.getElementById("lockArea").style.display = "none";
+    } else {
+        alert("كلمة المرور غير صحيحة");
+    }
+}
+
+// تصدير JSON
+function exportJSON() {
+    let materialsMap = {};
+
+    for (let key in firebaseQuestions) {
+        let q = firebaseQuestions[key];
+
+        if (!materialsMap[q.name]) {
+            materialsMap[q.name] = { name: q.name, questions: [] };
+        }
+
+        materialsMap[q.name].questions.push({
+            q: q.q,
+            a: q.a,
+            b: q.b,
+            c: q.c,
+            d: q.d,
+            correct: q.correct,
+            skill: q.skill
+        });
+    }
+
+    let finalArray = Object.values(materialsMap);
+    document.getElementById("output").value = JSON.stringify(finalArray, null, 4);
+}
+let importedQuestions = [];
+
+function importExcel() {
+    let file = document.getElementById("excelFile").files[0];
+    if (!file) {
+        alert("اختر ملف Excel أولاً");
+        return;
+    }
+
+    let reader = new FileReader();
+    reader.onload = function(e) {
+        let data = new Uint8Array(e.target.result);
+        let workbook = XLSX.read(data, { type: "array" });
+
+        let sheet = workbook.Sheets[workbook.SheetNames[0]];
+        let json = XLSX.utils.sheet_to_json(sheet);
+
+        importedQuestions = json.map(row => ({
+            name: row.name || "",
+            q: row.q || "",
+            a: row.a || "",
+            b: row.b || "",
+            c: row.c || "",
+            d: row.d || "",
+            correct: Number(row.correct),
+            skill: row.skill || ""
+        }));
+
+        document.getElementById("importStatus").innerHTML =
+            "✔ تم استيراد " + importedQuestions.length + " سؤال من Excel";
+    };
+
+    reader.readAsArrayBuffer(file);
+}
+function uploadImported() {
+    if (importedQuestions.length === 0) {
+        alert("لا توجد أسئلة مستوردة.");
+        return;
+    }
+
+    const ref = firebase.database().ref("build_questions");
+    let updates = {};
+
+    importedQuestions.forEach(q => {
+        let newRef = ref.push();
+        updates[newRef.key] = q;
+    });
+
+    ref.update(updates)
+        .then(() => {
+            alert("✔ تم رفع الأسئلة المستوردة بنجاح");
+            importedQuestions = [];
+            document.getElementById("importStatus").innerHTML = "";
+        })
+        .catch(err => alert("خطأ أثناء الرفع"));
+}
+
+// رفع الأسئلة الجديدة فقط
+function uploadToFirebase() {
+    if (newQuestions.length === 0) {
+        alert("لا توجد أسئلة جديدة لرفعها.");
+        return;
+    }
+
+    const ref = firebase.database().ref("build_questions");
+    let updates = {};
+
+    newQuestions.forEach(q => {
+        let newRef = ref.push();
+        updates[newRef.key] = q;
+    });
+
+    ref.update(updates)
+        .then(() => {
+            alert("تم رفع الأسئلة الجديدة بنجاح.");
+            newQuestions = [];
+        })
+        .catch(err => alert("خطأ أثناء الرفع"));
+}
+</script>
+
+</body>
+</html>
